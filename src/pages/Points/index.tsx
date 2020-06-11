@@ -6,6 +6,7 @@ import {
     Image,
     TouchableOpacity,
     ScrollView,
+    Alert,
 } from "react-native";
 import Constants from "expo-constants";
 import { Feather as Icon } from "@expo/vector-icons";
@@ -13,6 +14,7 @@ import { AntDesign as Ant } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import MapView, { Marker } from "react-native-maps";
 import { SvgUri } from "react-native-svg";
+import * as Location from "expo-location";
 import api from "../../services/api";
 
 // import { Container } from './styles';
@@ -26,12 +28,34 @@ interface Item {
 const Points: React.FC = () => {
     const [items, setItems] = useState<Item[]>([]); // Sempre que armazenamos um Array, no estado, precisamos tipar com Interface
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
+    const [initialPosition, setInitialPosition] = useState<number[]>([0, 0]);
     const navigation = useNavigation();
     useEffect(() => {
         api.get("items").then((response) => {
             setItems(response.data);
         });
     });
+
+    useEffect(() => {
+        async function loadPosition() {
+            const { status } = await Location.requestPermissionsAsync();
+
+            if (status !== "granted") {
+                Alert.alert(
+                    "Oops...",
+                    "Precisamos da permissão de geo-localização"
+                );
+                return;
+            }
+
+            const location = await Location.getCurrentPositionAsync();
+            const { latitude, longitude } = location.coords;
+
+            setInitialPosition([latitude, longitude]);
+        }
+
+        loadPosition();
+    }, []);
 
     function handleNavigationBack() {
         navigation.goBack();
@@ -63,43 +87,45 @@ const Points: React.FC = () => {
                     Encontre no mapa um ponto de coleta.
                 </Text>
                 <View style={styles.mapContainer}>
-                    <MapView
-                        initialRegion={{
-                            latitude: -19.893890871842068,
-                            longitude: -43.952919244766235,
-                            latitudeDelta: 0.014,
-                            longitudeDelta: 0.014,
-                        }}
-                        style={styles.map}
-                    >
-                        <Marker
-                            coordinate={{
-                                latitude: -19.893890871842068,
-                                longitude: -43.952919244766235,
+                    {initialPosition[0] !== 0 && (
+                        <MapView
+                            initialRegion={{
+                                latitude: initialPosition[0],
+                                longitude: initialPosition[1],
+                                latitudeDelta: 0.014,
+                                longitudeDelta: 0.014,
                             }}
-                            style={styles.mapMarker}
-                            onPress={handleNavigateToDetail}
+                            style={styles.map}
                         >
-                            <View style={styles.mapMarkerContainer}>
-                                <Image
-                                    style={styles.mapMarkerImage}
-                                    source={{
-                                        uri:
-                                            "https://images.unsplash.com/photo-1506484381205-f7945653044d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
-                                    }}
+                            <Marker
+                                coordinate={{
+                                    latitude: initialPosition[0],
+                                    longitude: initialPosition[1],
+                                }}
+                                style={styles.mapMarker}
+                                onPress={handleNavigateToDetail}
+                            >
+                                <View style={styles.mapMarkerContainer}>
+                                    <Image
+                                        style={styles.mapMarkerImage}
+                                        source={{
+                                            uri:
+                                                "https://images.unsplash.com/photo-1506484381205-f7945653044d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
+                                        }}
+                                    />
+                                    <Text style={styles.mapMarkerTitle}>
+                                        Mercado
+                                    </Text>
+                                </View>
+                                <Ant
+                                    style={{ top: -15, left: 30 }}
+                                    name="caretdown"
+                                    size={30}
+                                    color="#34cb79"
                                 />
-                                <Text style={styles.mapMarkerTitle}>
-                                    Mercado
-                                </Text>
-                            </View>
-                            <Ant
-                                style={{ top: -15, left: 30 }}
-                                name="caretdown"
-                                size={30}
-                                color="#34cb79"
-                            />
-                        </Marker>
-                    </MapView>
+                            </Marker>
+                        </MapView>
+                    )}
                 </View>
             </View>
             <View style={styles.itemsContainer}>
