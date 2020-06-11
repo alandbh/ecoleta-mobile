@@ -25,19 +25,31 @@ interface Item {
 
 const Points: React.FC = () => {
     const [items, setItems] = useState<Item[]>([]); // Sempre que armazenamos um Array, no estado, precisamos tipar com Interface
+    const [selectedItems, setSelectedItems] = useState<number[]>([]);
+    const navigation = useNavigation();
     useEffect(() => {
         api.get("items").then((response) => {
             setItems(response.data);
         });
     });
 
-    const navigation = useNavigation();
     function handleNavigationBack() {
         navigation.goBack();
     }
 
     function handleNavigateToDetail() {
         navigation.navigate("Detail");
+    }
+
+    function handleSelectItem(itemId: number) {
+        if (selectedItems.includes(itemId)) {
+            const filteredItems = selectedItems.filter(
+                (item) => item !== itemId
+            );
+            setSelectedItems(filteredItems);
+        } else {
+            setSelectedItems([...selectedItems, itemId]);
+        }
     }
 
     return (
@@ -99,8 +111,13 @@ const Points: React.FC = () => {
                     {items.map((item) => (
                         <TouchableOpacity
                             key={String(item.id)}
-                            style={styles.item}
-                            onPress={() => {}}
+                            style={[
+                                styles.item,
+                                selectedItems.includes(item.id)
+                                    ? styles.selectedItem
+                                    : {},
+                            ]}
+                            onPress={() => handleSelectItem(item.id)}
                             activeOpacity={0.6}
                         >
                             <SvgUri
