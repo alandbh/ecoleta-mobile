@@ -135,12 +135,11 @@ const Points: React.FC = () => {
                                         <Image
                                             style={styles.mapMarkerImage}
                                             source={{
-                                                uri:
-                                                    "https://images.unsplash.com/photo-1506484381205-f7945653044d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
+                                                uri: point.image,
                                             }}
                                         />
                                         <Text style={styles.mapMarkerTitle}>
-                                            Mercado
+                                            {point.name}
                                         </Text>
                                     </View>
                                     <Ant
