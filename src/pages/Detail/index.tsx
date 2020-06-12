@@ -8,14 +8,22 @@ import {
     SafeAreaView,
 } from "react-native";
 import Constants from "expo-constants";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Feather as Icon, FontAwesome } from "@expo/vector-icons";
 import { RectButton } from "react-native-gesture-handler";
 
 // import { Container } from './styles';
 
+interface Params {
+    point_id: number;
+}
+
 const Detail: React.FC = () => {
     const navigation = useNavigation();
+    const route = useRoute();
+
+    const params = route.params as Params;
+
     function handleNavigationBack() {
         navigation.goBack();
     }

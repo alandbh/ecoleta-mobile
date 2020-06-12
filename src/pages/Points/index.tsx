@@ -11,7 +11,7 @@ import {
 import Constants from "expo-constants";
 import { Feather as Icon } from "@expo/vector-icons";
 import { AntDesign as Ant } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import MapView, { Marker } from "react-native-maps";
 import { SvgUri } from "react-native-svg";
 import * as Location from "expo-location";
@@ -85,8 +85,8 @@ const Points: React.FC = () => {
         navigation.goBack();
     }
 
-    function handleNavigateToDetail() {
-        navigation.navigate("Detail");
+    function handleNavigateToDetail(id: number) {
+        navigation.navigate("Detail", { point_id: id });
     }
 
     function handleSelectItem(itemId: number) {
@@ -129,7 +129,9 @@ const Points: React.FC = () => {
                                         longitude: point.longitude,
                                     }}
                                     style={styles.mapMarker}
-                                    onPress={handleNavigateToDetail}
+                                    onPress={() =>
+                                        handleNavigateToDetail(point.id)
+                                    }
                                 >
                                     <View style={styles.mapMarkerContainer}>
                                         <Image
