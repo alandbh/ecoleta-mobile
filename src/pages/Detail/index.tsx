@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     StyleSheet,
@@ -10,22 +10,82 @@ import {
 import Constants from "expo-constants";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Feather as Icon, FontAwesome } from "@expo/vector-icons";
+import * as MailComposer from "expo-mail-composer";
 import { RectButton } from "react-native-gesture-handler";
+import api from "../../services/api";
 
 // import { Container } from './styles';
 
 interface Params {
     point_id: number;
 }
+interface Data {
+    point: {
+        image: string;
+        name: string;
+        whatsapp: string;
+        email: string;
+        city: string;
+        uf: string;
+        id: number;
+    };
+    items: {
+        title: string;
+    }[];
+}
+
+const fakeData = `{
+    "point": {
+      "id": 5,
+      "image": "https://images.unsplash.com/photo-1506484381205-f7945653044d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
+      "name": "Seu Zé",
+      "email": "contato1@mercado.com",
+      "whatsapp": "31776655449",
+      "latitude": -19.885117,
+      "longitude": -43.9076947,
+      "city": "Belo Horizonte",
+      "uf": "MG"
+    },
+    "items": [
+      {
+        "title": "Papeis e papelão"
+      },
+      {
+        "title": "Resíduos eletrônicos"
+      }
+    ]
+  }`;
+
+// const data = JSON.parse(fakeData);
 
 const Detail: React.FC = () => {
+    const [data, setData] = useState<Data>({} as Data);
     const navigation = useNavigation();
     const route = useRoute();
 
-    const params = route.params as Params;
+    const routeParams = route.params as Params;
+
+    useEffect(() => {
+        api.get(`points/${routeParams.point_id}`).then((response) => {
+            setData(response.data);
+            // console.log("response.data");
+        });
+        // setData(JSON.parse(fakeData));
+    }, []);
 
     function handleNavigationBack() {
         navigation.goBack();
+    }
+
+    function handleComposeEmail() {
+        MailComposer.composeAsync({
+            recipients: [data.point.email],
+            subject: "Interesse em coletar algum item",
+        });
+    }
+
+    if (!data.point) {
+        return null;
     }
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -36,16 +96,19 @@ const Detail: React.FC = () => {
                 <Image
                     style={styles.pointImage}
                     source={{
-                        uri:
-                            "https://images.unsplash.com/photo-1506484381205-f7945653044d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
+                        uri: data.point.image,
                     }}
                 />
-                <Text style={styles.pointName}>Mercadão do João</Text>
-                <Text style={styles.pointItems}>Lâmpadas, Óleo de cozinha</Text>
+                <Text style={styles.pointName}>{data.point.name}</Text>
+                <Text style={styles.pointItems}>
+                    {data.items.map((item) => item.title).join(", ")}
+                </Text>
 
                 <View style={styles.address}>
                     <Text style={styles.addressTitle}>Endereço</Text>
-                    <Text style={styles.addressContent}>Belo Horizonte</Text>
+                    <Text style={styles.addressContent}>
+                        {data.point.city}, {data.point.uf}
+                    </Text>
                 </View>
             </View>
             <View style={styles.footer}>
@@ -53,7 +116,7 @@ const Detail: React.FC = () => {
                     <FontAwesome color="#fff" size={20} name="whatsapp" />
                     <Text style={styles.buttonText}>Whatsapp</Text>
                 </RectButton>
-                <RectButton style={styles.button} onPress={() => {}}>
+                <RectButton style={styles.button} onPress={handleComposeEmail}>
                     <Icon color="#fff" size={20} name="mail" />
                     <Text style={styles.buttonText}>Email</Text>
                 </RectButton>
