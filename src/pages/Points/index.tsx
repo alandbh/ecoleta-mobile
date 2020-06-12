@@ -24,11 +24,19 @@ interface Item {
     title: string;
     image_url: string;
 }
+interface Point {
+    id: number;
+    name: string;
+    image: string;
+    latitude: number;
+    longitude: number;
+}
 
 const Points: React.FC = () => {
     const [items, setItems] = useState<Item[]>([]); // Sempre que armazenamos um Array, no estado, precisamos tipar com Interface
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [initialPosition, setInitialPosition] = useState<number[]>([0, 0]);
+    const [points, setPoints] = useState<Point[]>([]);
     const navigation = useNavigation();
     useEffect(() => {
         api.get("items").then((response) => {
@@ -56,6 +64,22 @@ const Points: React.FC = () => {
 
         loadPosition();
     }, []);
+
+    useEffect(() => {
+        api.get("points", {
+            params: {
+                uf: "MG",
+                city: "Belo Horizonte",
+                items: [2, 3],
+            },
+        })
+            .then((response) => {
+                setPoints(response.data);
+            })
+            .catch((response) => {
+                throw response.error;
+            });
+    }, [initialPosition]);
 
     function handleNavigationBack() {
         navigation.goBack();
@@ -97,33 +121,36 @@ const Points: React.FC = () => {
                             }}
                             style={styles.map}
                         >
-                            <Marker
-                                coordinate={{
-                                    latitude: initialPosition[0],
-                                    longitude: initialPosition[1],
-                                }}
-                                style={styles.mapMarker}
-                                onPress={handleNavigateToDetail}
-                            >
-                                <View style={styles.mapMarkerContainer}>
-                                    <Image
-                                        style={styles.mapMarkerImage}
-                                        source={{
-                                            uri:
-                                                "https://images.unsplash.com/photo-1506484381205-f7945653044d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
-                                        }}
+                            {points.map((point) => (
+                                <Marker
+                                    key={point.id}
+                                    coordinate={{
+                                        latitude: point.latitude,
+                                        longitude: point.longitude,
+                                    }}
+                                    style={styles.mapMarker}
+                                    onPress={handleNavigateToDetail}
+                                >
+                                    <View style={styles.mapMarkerContainer}>
+                                        <Image
+                                            style={styles.mapMarkerImage}
+                                            source={{
+                                                uri:
+                                                    "https://images.unsplash.com/photo-1506484381205-f7945653044d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
+                                            }}
+                                        />
+                                        <Text style={styles.mapMarkerTitle}>
+                                            Mercado
+                                        </Text>
+                                    </View>
+                                    <Ant
+                                        style={{ top: -15, left: 30 }}
+                                        name="caretdown"
+                                        size={30}
+                                        color="#34cb79"
                                     />
-                                    <Text style={styles.mapMarkerTitle}>
-                                        Mercado
-                                    </Text>
-                                </View>
-                                <Ant
-                                    style={{ top: -15, left: 30 }}
-                                    name="caretdown"
-                                    size={30}
-                                    color="#34cb79"
-                                />
-                            </Marker>
+                                </Marker>
+                            ))}
                         </MapView>
                     )}
                 </View>
