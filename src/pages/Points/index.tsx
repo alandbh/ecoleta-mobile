@@ -11,7 +11,7 @@ import {
 import Constants from "expo-constants";
 import { Feather as Icon } from "@expo/vector-icons";
 import { AntDesign as Ant } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import MapView, { Marker } from "react-native-maps";
 import { SvgUri } from "react-native-svg";
 import * as Location from "expo-location";

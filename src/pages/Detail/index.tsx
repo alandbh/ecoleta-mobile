@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     Image,
     SafeAreaView,
+    Linking,
 } from "react-native";
 import Constants from "expo-constants";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -84,6 +85,13 @@ const Detail: React.FC = () => {
         });
     }
 
+    function handleWhatsapp() {
+        // A função "Linking" serve tanto para criarmos links externos como internos ou "Deep-linking"
+        Linking.openURL(
+            `whatsapp://send?phone=${data.point.whatsapp}&text=Tenho interesse sobre coleta de resíduos`
+        );
+    }
+
     if (!data.point) {
         return null;
     }
@@ -112,7 +120,7 @@ const Detail: React.FC = () => {
                 </View>
             </View>
             <View style={styles.footer}>
-                <RectButton style={styles.button} onPress={() => {}}>
+                <RectButton style={styles.button} onPress={handleWhatsapp}>
                     <FontAwesome color="#fff" size={20} name="whatsapp" />
                     <Text style={styles.buttonText}>Whatsapp</Text>
                 </RectButton>
