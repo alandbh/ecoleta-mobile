@@ -22,7 +22,7 @@ const homeBackground = require("../../assets/home-background.png");
 const fakeUfs = ["Rondônia", "Acre", "Amazonas", "Roraima"];
 
 interface UfResponse {
-    nome: string;
+    sigla: string;
 }
 
 const Home: React.FC = () => {
@@ -35,7 +35,7 @@ const Home: React.FC = () => {
         Axios.get<UfResponse[]>(
             "https://servicodados.ibge.gov.br/api/v1/localidades/estados"
         ).then((response) => {
-            const ufsResponse = response.data.map((uf) => uf.nome);
+            const ufsResponse = response.data.map((uf) => uf.sigla);
             setUfs(ufsResponse);
             // console.log(ufsResponse);
         });
@@ -91,6 +91,7 @@ const Home: React.FC = () => {
                         listItemStyle={styles.autocompleteListItem}
                         onSelect={handleOnSelect}
                     />
+
                     <RectButton
                         style={styles.button}
                         onPress={handleNavigateToPoint}
