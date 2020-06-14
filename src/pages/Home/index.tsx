@@ -72,13 +72,15 @@ const Home: React.FC = () => {
                     </Text>
                 </View>
                 <View style={styles.footer}>
-                    <Autocomplete
-                        data={ufs}
-                        inputStyle={styles.input}
-                        listStyle={styles.autocompleteList}
-                        listItemStyle={styles.autocompleteListItem}
-                        onSelect={handleOnSelect}
-                    />
+                    {ufs.length > 2 && (
+                        <Autocomplete
+                            data={ufs}
+                            inputStyle={styles.input}
+                            listStyle={styles.autocompleteList}
+                            listItemStyle={styles.autocompleteListItem}
+                            onSelect={handleOnSelect}
+                        />
+                    )}
 
                     <RectButton
                         style={styles.button}
