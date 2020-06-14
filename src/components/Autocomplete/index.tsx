@@ -18,13 +18,14 @@ const Autocomplete: React.FC<PropsType> = (props) => {
 
     useEffect(() => {
         setItems(props.data);
+        console.log(props.data.length);
     }, []);
 
     //e.nativeEvent.text
     function hangleOnChange(text: string) {
         console.log(text);
         const queryItems =
-            text === "" || text.length < 2
+            text === "" || text.length < 1
                 ? []
                 : items.filter((item) => item.includes(text));
         setFilteredItems(queryItems);
@@ -41,12 +42,13 @@ const Autocomplete: React.FC<PropsType> = (props) => {
 
     return (
         <>
-            <TextInput
-                style={props.inputStyle}
-                onChangeText={(text) => hangleOnChange(text)}
-                value={value}
-                // onChange={(e) => hangleOnChange(e.nativeEvent.text)}
-            />
+            {props.data.length > 1 && (
+                <TextInput
+                    style={props.inputStyle}
+                    onChangeText={(text) => hangleOnChange(text)}
+                    value={value}
+                />
+            )}
             <View style={props.listStyle}>
                 {filteredItems.map((item, index) => (
                     <TouchableOpacity
