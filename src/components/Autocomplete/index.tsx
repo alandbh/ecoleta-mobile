@@ -6,6 +6,7 @@ interface PropsType {
     inputStyle?: {};
     listStyle?: {};
     listItemStyle?: {};
+    listItemStyleText?: {};
     data: string[];
     onSelect: (value: string) => void;
 }
@@ -62,7 +63,7 @@ const Autocomplete: React.FC<PropsType> = (props) => {
                         style={props.listItemStyle}
                         onPress={() => handleOnPress(item)}
                     >
-                        <Text>{item}</Text>
+                        <Text style={props.listItemStyleText}>{item}</Text>
                     </TouchableOpacity>
                 ))}
             </View>

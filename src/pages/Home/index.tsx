@@ -78,6 +78,7 @@ const Home: React.FC = () => {
                             inputStyle={styles.input}
                             listStyle={styles.autocompleteList}
                             listItemStyle={styles.autocompleteListItem}
+                            listItemStyleText={styles.autocompleteListItemText}
                             onSelect={handleOnSelect}
                         />
                     )}
@@ -163,12 +164,17 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     autocompleteListItem: {
-        height: 50,
+        height: 40,
+        lineHeight: 40,
         backgroundColor: "#FFF",
         paddingHorizontal: 14,
-        fontSize: 16,
-        borderBottomColor: "red",
+        borderBottomColor: "#eee",
         borderBottomWidth: 1,
+    },
+    autocompleteListItemText: {
+        lineHeight: 40,
+        fontSize: 16,
+        color: "#999",
     },
     autocompleteList: {
         backgroundColor: "#FFF",
