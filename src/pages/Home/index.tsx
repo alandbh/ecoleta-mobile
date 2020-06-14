@@ -6,12 +6,15 @@ import {
     Image,
     StyleSheet,
     TouchableOpacity,
+    KeyboardAvoidingView,
+    Platform,
 } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
 import { Feather as Icon } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import Autocomplete from "react-native-autocomplete-input";
 import Axios from "axios";
+
+import Autocomplete from "../../components/Autocomplete";
 
 const logo = require("../../assets/logo.png");
 const homeBackground = require("../../assets/home-background.png");
@@ -24,8 +27,8 @@ interface UfResponse {
 
 const Home: React.FC = () => {
     const navigation = useNavigation();
-    const [ufs, setUfs] = useState<String[]>([]);
-    const [filteredUfs, setFilteredUfs] = useState<String[]>([]);
+    const [ufs, setUfs] = useState<string[]>([]);
+    const [filteredUfs, setFilteredUfs] = useState<string[]>([]);
     const [selectedUf, setSelectedUf] = useState<string>("");
 
     useEffect(() => {
@@ -33,7 +36,7 @@ const Home: React.FC = () => {
             "https://servicodados.ibge.gov.br/api/v1/localidades/estados"
         ).then((response) => {
             const ufsResponse = response.data.map((uf) => uf.nome);
-            setUfs(fakeUfs);
+            setUfs(ufsResponse);
             // console.log(ufsResponse);
         });
     }, []);
@@ -52,53 +55,60 @@ const Home: React.FC = () => {
     function handleNavigateToPoint() {
         navigation.navigate("Points");
     }
+
+    function handleOnSelect(value: string) {
+        console.log("opa: ", value);
+    }
     return (
-        <ImageBackground
-            source={homeBackground}
-            style={styles.container}
-            imageStyle={{ width: 274, height: 368 }}
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-            <View style={{ ...styles.main, borderColor: "red" }}>
-                <Image source={logo} />
-                <Text style={styles.title}>
-                    Seu marketplace de coleta de resíduos
-                </Text>
-                <Text style={styles.description}>
-                    Ajudamos pessoas a encontrarem pontos de coleta de forma
-                    eficiente.
-                </Text>
-            </View>
-            <View style={{ flex: 1 }}>
-                <Autocomplete
-                    style={styles.input}
-                    data={filteredUfs}
-                    defaultValue={selectedUf}
-                    onChangeText={(text) => handleChangeText(text)}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            key={item as string}
-                            style={{ backgroundColor: "orange" }}
-                            onPress={() => handleSelectUf(item as string)}
-                        >
-                            <Text>{item}</Text>
-                        </TouchableOpacity>
-                    )}
-                />
-            </View>
-            <View style={styles.footer}>
-                <RectButton
-                    style={styles.button}
-                    onPress={handleNavigateToPoint}
+            <ImageBackground
+                source={homeBackground}
+                style={styles.container}
+                imageStyle={{ width: 274, height: 368 }}
+            >
+                <View
+                    style={{
+                        ...styles.main,
+                    }}
                 >
-                    <View style={styles.buttonIcon}>
-                        <Text>
-                            <Icon name="arrow-right" color="#fff" size={24} />
-                        </Text>
-                    </View>
-                    <Text style={styles.buttonText}>Entrar</Text>
-                </RectButton>
-            </View>
-        </ImageBackground>
+                    <Image source={logo} />
+                    <Text style={styles.title}>
+                        Seu marketplace de coleta de resíduos
+                    </Text>
+                    <Text style={styles.description}>
+                        Ajudamos pessoas a encontrarem pontos de coleta de forma
+                        eficiente.
+                    </Text>
+                </View>
+                <View style={styles.footer}>
+                    <Autocomplete
+                        data={ufs}
+                        inputStyle={styles.input}
+                        listStyle={styles.autocompleteList}
+                        listItemStyle={styles.autocompleteListItem}
+                        onSelect={handleOnSelect}
+                    />
+                    <RectButton
+                        style={styles.button}
+                        onPress={handleNavigateToPoint}
+                    >
+                        <View style={styles.buttonIcon}>
+                            <Text>
+                                <Icon
+                                    name="arrow-right"
+                                    color="#fff"
+                                    size={24}
+                                />
+                            </Text>
+                        </View>
+                        <Text style={styles.buttonText}>Entrar</Text>
+                    </RectButton>
+                </View>
+            </ImageBackground>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -112,6 +122,7 @@ const styles = StyleSheet.create({
     main: {
         flex: 1,
         justifyContent: "center",
+        position: "relative",
     },
 
     title: {
@@ -135,28 +146,6 @@ const styles = StyleSheet.create({
 
     select: {},
 
-    autocompleteContainer: {
-        flex: 1,
-        left: 0,
-        // position: "absolute",
-        right: 0,
-        top: 0,
-        zIndex: 1,
-        borderColor: "red",
-    },
-    itemText: {
-        fontSize: 15,
-        margin: 2,
-    },
-    descriptionContainer: {
-        // `backgroundColor` needs to be set otherwise the
-        // autocomplete input will disappear on text input.
-        backgroundColor: "#F5FCFF",
-        marginTop: 25,
-    },
-    infoText: {
-        textAlign: "center",
-    },
     titleText: {
         fontSize: 18,
         fontWeight: "500",
@@ -181,6 +170,19 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         paddingHorizontal: 24,
         fontSize: 16,
+    },
+    autocompleteListItem: {
+        height: 50,
+        backgroundColor: "#FFF",
+        paddingHorizontal: 14,
+        fontSize: 16,
+        borderBottomColor: "red",
+        borderBottomWidth: 1,
+    },
+    autocompleteList: {
+        backgroundColor: "#FFF",
+        borderRadius: 10,
+        marginBottom: 8,
     },
 
     button: {
