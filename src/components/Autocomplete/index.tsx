@@ -37,8 +37,12 @@ const Autocomplete: React.FC<PropsType> = (props) => {
 
         setFilteredItems([]);
         onChangeText(item);
-        onSelect(item);
+        // onSelect(value);
     }
+
+    useEffect(() => {
+        onSelect(value);
+    }, [value]);
 
     return (
         <>
@@ -47,6 +51,8 @@ const Autocomplete: React.FC<PropsType> = (props) => {
                     style={props.inputStyle}
                     onChangeText={(text) => hangleOnChange(text)}
                     value={value}
+                    autoCapitalize="characters"
+                    maxLength={2}
                 />
             )}
             <View style={props.listStyle}>
