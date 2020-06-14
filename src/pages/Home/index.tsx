@@ -28,7 +28,6 @@ interface UfResponse {
 const Home: React.FC = () => {
     const navigation = useNavigation();
     const [ufs, setUfs] = useState<string[]>([]);
-    const [filteredUfs, setFilteredUfs] = useState<string[]>([]);
     const [selectedUf, setSelectedUf] = useState<string>("");
 
     useEffect(() => {
@@ -40,17 +39,6 @@ const Home: React.FC = () => {
             // console.log(ufsResponse);
         });
     }, []);
-
-    function handleSelectUf(text: string) {
-        console.log(text);
-        setSelectedUf(text);
-    }
-    function handleChangeText(queryTxt: string) {
-        console.log(queryTxt);
-        const queryUf =
-            queryTxt === "" ? [] : ufs.filter((uf) => uf.includes(queryTxt));
-        setFilteredUfs(queryUf);
-    }
 
     function handleNavigateToPoint() {
         navigation.navigate("Points");
