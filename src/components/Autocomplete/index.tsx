@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, TextInput, Text, TouchableOpacity } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 
 // import { Container } from './styles';
 interface PropsType {
@@ -8,14 +9,23 @@ interface PropsType {
     listItemStyle?: {};
     listItemStyleText?: {};
     data: string[];
+    maxLength?: number;
+    autoCapitalize?: "none" | "sentences" | "words" | "characters" | undefined;
+    autoFocus?: boolean;
     onSelect: (value: string) => void;
 }
 const Autocomplete: React.FC<PropsType> = (props) => {
     const [value, onChangeText] = useState("");
     const [items, setItems] = useState<string[]>([""]);
     const [filteredItems, setFilteredItems] = useState<string[]>([]);
+    const [focus, setFocus] = useState<boolean>(false);
     // const [selectedItem, setSelectedItem] = useState<string>("");
-    const { onSelect } = props;
+    const {
+        onSelect,
+        maxLength = 255,
+        autoCapitalize = "none",
+        autoFocus = false,
+    } = props;
 
     useEffect(() => {
         setItems(props.data);
@@ -28,9 +38,17 @@ const Autocomplete: React.FC<PropsType> = (props) => {
         const queryItems =
             text === "" || text.length < 1
                 ? []
-                : items.filter((item) => item.includes(text));
-        setFilteredItems(queryItems);
+                : items.filter((item) =>
+                      item
+                          .toLocaleLowerCase()
+                          .includes(text.toLocaleLowerCase())
+                  );
         onChangeText(text);
+        if (text.length === 2) {
+            setFilteredItems([]);
+        } else {
+            setFilteredItems(queryItems);
+        }
     }
 
     function handleOnPress(item: string) {
@@ -47,26 +65,33 @@ const Autocomplete: React.FC<PropsType> = (props) => {
 
     return (
         <>
-            {props.data.length > 1 && (
+            {/* {props.data.length > 1 && ( */}
+            {true && (
                 <TextInput
                     style={props.inputStyle}
                     onChangeText={(text) => hangleOnChange(text)}
                     value={value}
-                    autoCapitalize="characters"
-                    maxLength={2}
+                    autoCapitalize={autoCapitalize}
+                    maxLength={maxLength}
+                    onFocus={() => setFocus(true)}
+                    autoFocus={autoFocus}
                 />
             )}
-            <View style={props.listStyle}>
-                {filteredItems.map((item, index) => (
-                    <TouchableOpacity
-                        key={String(index)}
-                        style={props.listItemStyle}
-                        onPress={() => handleOnPress(item)}
-                    >
-                        <Text style={props.listItemStyleText}>{item}</Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+            {focus && (
+                <View style={{ ...props.listStyle }}>
+                    {/* <ScrollView style={{}}> */}
+                    {filteredItems.map((item, index) => (
+                        <TouchableOpacity
+                            key={String(index)}
+                            style={props.listItemStyle}
+                            onPress={() => handleOnPress(item)}
+                        >
+                            <Text style={props.listItemStyleText}>{item}</Text>
+                        </TouchableOpacity>
+                    ))}
+                    {/* </ScrollView> */}
+                </View>
+            )}
         </>
     );
 };
