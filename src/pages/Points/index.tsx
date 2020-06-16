@@ -11,7 +11,7 @@ import {
 import Constants from "expo-constants";
 import { Feather as Icon } from "@expo/vector-icons";
 import { AntDesign as Ant } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import MapView, { Marker } from "react-native-maps";
 import { SvgUri } from "react-native-svg";
 import * as Location from "expo-location";
@@ -32,12 +32,22 @@ interface Point {
     longitude: number;
 }
 
+interface Params {
+    selectedUf: string;
+    selectedCity: string;
+}
+
 const Points: React.FC = () => {
     const [items, setItems] = useState<Item[]>([]); // Sempre que armazenamos um Array, no estado, precisamos tipar com Interface
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [initialPosition, setInitialPosition] = useState<number[]>([0, 0]);
     const [points, setPoints] = useState<Point[]>([]);
     const navigation = useNavigation();
+
+    const route = useRoute();
+
+    const routeParams = route.params as Params;
+
     useEffect(() => {
         api.get("items").then((response) => {
             setItems(response.data);
@@ -68,9 +78,12 @@ const Points: React.FC = () => {
     useEffect(() => {
         api.get("points", {
             params: {
-                uf: "MG",
-                city: "Belo Horizonte",
-                items: [2, 3],
+                uf: routeParams.selectedUf,
+                city: routeParams.selectedCity,
+                items:
+                    selectedItems.length === 0
+                        ? [1, 2, 3, 4, 5, 6]
+                        : selectedItems,
             },
         })
             .then((response) => {
@@ -79,7 +92,7 @@ const Points: React.FC = () => {
             .catch((response) => {
                 throw response.error;
             });
-    }, [initialPosition]);
+    }, [selectedItems]);
 
     function handleNavigationBack() {
         navigation.goBack();
@@ -116,8 +129,8 @@ const Points: React.FC = () => {
                             initialRegion={{
                                 latitude: initialPosition[0],
                                 longitude: initialPosition[1],
-                                latitudeDelta: 0.014,
-                                longitudeDelta: 0.014,
+                                latitudeDelta: 0.088,
+                                longitudeDelta: 0.088,
                             }}
                             style={styles.map}
                         >
