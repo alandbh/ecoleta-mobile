@@ -5,16 +5,22 @@ import {
     Text,
     Image,
     StyleSheet,
+    Keyboard,
     TouchableOpacity,
     KeyboardAvoidingView,
+    TouchableWithoutFeedback,
     Platform,
+    Picker,
+    Modal,
+    BackHandler,
 } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
 import { Feather as Icon } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import Axios from "axios";
 
 import Autocomplete from "../../components/Autocomplete";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const logo = require("../../assets/logo.png");
 const homeBackground = require("../../assets/home-background.png");
@@ -24,11 +30,19 @@ const fakeUfs = ["Rondônia", "Acre", "Amazonas", "Roraima"];
 interface UfResponse {
     sigla: string;
 }
+interface CitiesResponse {
+    nome: string;
+}
 
 const Home: React.FC = () => {
     const navigation = useNavigation();
     const [ufs, setUfs] = useState<string[]>([]);
     const [selectedUf, setSelectedUf] = useState<string>("");
+    const [cities, setCities] = useState<string[]>([]);
+    const [selectedCity, setSelectedCity] = useState<string>("");
+    const [keyboardOpen, setKeyboardOpen] = useState<boolean>(false);
+    const [modalOpen, setModalOpen] = useState<boolean>(false);
+    const [focusOnUf, setFocusOnUf] = useState<boolean>(false);
 
     useEffect(() => {
         Axios.get<UfResponse[]>(
@@ -40,67 +54,222 @@ const Home: React.FC = () => {
         });
     }, []);
 
+    useEffect(() => {
+        Axios.get<CitiesResponse[]>(
+            `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`
+        ).then((response) => {
+            const citiesResponse = response.data.map((city) => city.nome);
+            setCities(citiesResponse);
+            console.log(citiesResponse);
+        });
+    }, [selectedUf]);
+
     function handleNavigateToPoint() {
-        navigation.navigate("Points");
+        navigation.navigate("Points", {
+            selectedUf,
+            selectedCity,
+        });
     }
 
     function handleOnSelect(value: string) {
-        console.log("opa: ", value);
+        console.log("Estado: ", value);
+        setSelectedUf(value);
     }
+    function handleOnSelectCity(value: string) {
+        console.log("Cidade: ", value);
+        setSelectedCity(value);
+    }
+
+    Keyboard.addListener("keyboardWillShow", () => {
+        setKeyboardOpen(true);
+        console.log("teclado aberto");
+    });
+    Keyboard.addListener("keyboardDidHide", () => {
+        setKeyboardOpen(false);
+        console.log("teclado fechado");
+    });
+    BackHandler;
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            {/* <SafeAreaProvider> */}
             <ImageBackground
                 source={homeBackground}
-                style={styles.container}
+                style={{ ...styles.container, paddingBottom: 100 }}
                 imageStyle={{ width: 274, height: 368 }}
             >
+                {/* <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                > */}
                 <View
-                    style={{
-                        ...styles.main,
-                    }}
+                    style={
+                        keyboardOpen ? { ...styles.main } : { ...styles.main }
+                    }
                 >
-                    <Image source={logo} />
-                    <Text style={styles.title}>
-                        Seu marketplace de coleta de resíduos
+                    <Image style={{ marginTop: 30 }} source={logo} />
+                    <Text
+                        style={
+                            keyboardOpen
+                                ? { display: "none" }
+                                : { ...styles.title }
+                        }
+                    >
+                        Seu buscador de coleta de resíduos
                     </Text>
                     <Text style={styles.description}>
-                        Ajudamos pessoas a encontrarem pontos de coleta de forma
-                        eficiente.
+                        Econtre pontos de coleta de resíduos perto de você.
                     </Text>
-                </View>
-                <View style={styles.footer}>
-                    {ufs.length > 2 && (
-                        <Autocomplete
-                            data={ufs}
-                            inputStyle={styles.input}
-                            listStyle={styles.autocompleteList}
-                            listItemStyle={styles.autocompleteListItem}
-                            listItemStyleText={styles.autocompleteListItemText}
-                            onSelect={handleOnSelect}
-                        />
-                    )}
-
-                    <RectButton
-                        style={styles.button}
-                        onPress={handleNavigateToPoint}
-                    >
-                        <View style={styles.buttonIcon}>
-                            <Text>
-                                <Icon
-                                    name="arrow-right"
-                                    color="#fff"
-                                    size={24}
-                                />
+                    {selectedCity === "" && (
+                        <TouchableOpacity
+                            style={{ ...styles.button, marginTop: 30 }}
+                            onPress={() => setModalOpen(true)}
+                        >
+                            <Text style={styles.buttonText}>
+                                Selecione sua cidade
                             </Text>
-                        </View>
-                        <Text style={styles.buttonText}>Entrar</Text>
-                    </RectButton>
+                        </TouchableOpacity>
+                    )}
                 </View>
+                <Modal
+                    onRequestClose={() => setModalOpen(false)}
+                    visible={modalOpen}
+                    onShow={() => setFocusOnUf(true)}
+                >
+                    <View
+                        style={{
+                            flex: 1,
+                            backgroundColor: "#f1f1f1",
+                            paddingHorizontal: 20,
+                            paddingVertical: 30,
+                        }}
+                    >
+                        {ufs.length > 2 && (
+                            <>
+                                <Text style={styles.inputLabel}>
+                                    Selecione a sigla do seu estado (UF)
+                                </Text>
+                                <Autocomplete
+                                    data={ufs}
+                                    inputStyle={styles.input}
+                                    listStyle={styles.autocompleteList}
+                                    listItemStyle={styles.autocompleteListItem}
+                                    listItemStyleText={
+                                        styles.autocompleteListItemText
+                                    }
+                                    maxLength={2}
+                                    autoCapitalize="characters"
+                                    autoFocus={true}
+                                    onSelect={handleOnSelect}
+                                />
+                            </>
+                        )}
+
+                        {/* {true && ( */}
+                        {cities.length > 2 && (
+                            <>
+                                <Text style={styles.inputLabel}>
+                                    Selecione sua cidade
+                                </Text>
+                                <Autocomplete
+                                    data={cities}
+                                    inputStyle={styles.input}
+                                    listStyle={styles.autocompleteList}
+                                    listItemStyle={styles.autocompleteListItem}
+                                    listItemStyleText={
+                                        styles.autocompleteListItemText
+                                    }
+                                    onSelect={handleOnSelectCity}
+                                />
+                            </>
+                        )}
+                        <TouchableOpacity
+                            onPress={() => setModalOpen(false)}
+                            style={styles.button}
+                        >
+                            <Text style={styles.buttonText}>OK</Text>
+                        </TouchableOpacity>
+                    </View>
+                </Modal>
+
+                {/* 
+                    <View>
+                        <Picker
+                            selectedValue={selectedCity}
+                            style={{ height: 50, width: "100%" }}
+                            onValueChange={(itemValue) =>
+                                setSelectedCity(itemValue)
+                            }
+                            mode={"dropdown"}
+                        >
+                            <Picker.Item label="Java" value="java" />
+                            <Picker.Item label="JavaScript" value="js" />
+                            <Picker.Item label="DotNet" value="dn" />
+                        </Picker>
+                    </View> */}
+
+                {selectedCity !== "" && (
+                    <>
+                        <View style={styles.footer}>
+                            <View style={{ paddingVertical: 20 }}>
+                                <Text style={{ fontSize: 14 }}>Estado:</Text>
+                                <Text
+                                    style={{ fontWeight: "bold", fontSize: 18 }}
+                                >
+                                    {selectedUf}
+                                </Text>
+                                <Text style={{ fontSize: 14, marginTop: 10 }}>
+                                    Cidade:
+                                </Text>
+                                <Text
+                                    style={{ fontWeight: "bold", fontSize: 18 }}
+                                >
+                                    {selectedCity}
+                                </Text>
+                            </View>
+                            <RectButton
+                                style={styles.button}
+                                onPress={handleNavigateToPoint}
+                            >
+                                <View style={styles.buttonIcon}>
+                                    <Text>
+                                        <Icon
+                                            name="arrow-right"
+                                            color="#fff"
+                                            size={24}
+                                        />
+                                    </Text>
+                                </View>
+                                <Text style={styles.buttonText}>
+                                    Veja no mapa
+                                </Text>
+                            </RectButton>
+                            <TouchableOpacity
+                                style={{
+                                    height: 40,
+                                    marginTop: 20,
+                                }}
+                                onPress={() => {
+                                    setSelectedUf("");
+                                    setSelectedCity("");
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        lineHeight: 40,
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    Remover a localidade
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </>
+                )}
+                {/* <View style={{ flex: 1 }} /> */}
+                {/* </KeyboardAvoidingView> */}
             </ImageBackground>
-        </KeyboardAvoidingView>
+            {/* </SafeAreaProvider> */}
+        </TouchableWithoutFeedback>
     );
 };
 
@@ -115,6 +284,9 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         position: "relative",
+    },
+    mainKeyboard: {
+        marginTop: -100,
     },
 
     title: {
@@ -134,7 +306,11 @@ const styles = StyleSheet.create({
         lineHeight: 24,
     },
 
-    footer: {},
+    footer: {
+        flex: 1,
+        marginTop: 30,
+        justifyContent: "flex-end",
+    },
 
     select: {},
 
@@ -162,9 +338,17 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         paddingHorizontal: 24,
         fontSize: 16,
+        borderColor: "#bbb",
+        borderStyle: "solid",
+        borderWidth: 2,
+    },
+    inputLabel: {
+        fontWeight: "bold",
+        fontSize: 16,
+        marginBottom: 8,
     },
     autocompleteListItem: {
-        height: 40,
+        height: 50,
         lineHeight: 40,
         backgroundColor: "#FFF",
         paddingHorizontal: 14,
@@ -172,7 +356,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
     },
     autocompleteListItemText: {
-        lineHeight: 40,
+        lineHeight: 50,
         fontSize: 16,
         color: "#999",
     },
