@@ -11,6 +11,7 @@ import {
 import Constants from "expo-constants";
 import { Feather as Icon } from "@expo/vector-icons";
 import { AntDesign as Ant } from "@expo/vector-icons";
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from "@react-navigation/native";
 import MapView, { Marker } from "react-native-maps";
 import { SvgUri } from "react-native-svg";
@@ -46,7 +47,7 @@ const Points: React.FC = () => {
 
     useEffect(() => {
         async function loadPosition() {
-            const { status } = await Location.requestPermissionsAsync();
+            const { status } = await Location.requestForegroundPermissionsAsync();
 
             if (status !== "granted") {
                 Alert.alert(
@@ -86,7 +87,7 @@ const Points: React.FC = () => {
     }
 
     function handleNavigateToDetail(id: number) {
-        navigation.navigate("Detail", { point_id: id });
+        navigation.navigate("Detail" as never, { point_id: id } as never);
     }
 
     function handleSelectItem(itemId: number) {

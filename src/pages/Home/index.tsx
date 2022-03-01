@@ -12,6 +12,8 @@ import { Feather as Icon } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import Autocomplete from "react-native-autocomplete-input";
 import Axios from "axios";
+import { Roboto_400Regular, Roboto_500Medium } from "@expo-google-fonts/roboto";
+import { Ubuntu_700Bold, useFonts } from "@expo-google-fonts/ubuntu";
 
 const logo = require("../../assets/logo.png");
 const homeBackground = require("../../assets/home-background.png");
@@ -50,7 +52,7 @@ const Home: React.FC = () => {
     }
 
     function handleNavigateToPoint() {
-        navigation.navigate("Points");
+        navigation.navigate("Points" as never);
     }
     return (
         <ImageBackground
